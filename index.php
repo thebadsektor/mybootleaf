@@ -31,7 +31,34 @@
                         <img src="logo.png" width="40px">
                         <div style="font-size: 20px; font-weight: 700; color: #343a40; padding-left: 10px;">LGU</div>
                     </div>
-                    <ul class="nav flex-column" id="polygon-buttons"></ul>
+                    <!-- Table with selectable rows -->
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="polygon-table"></tbody>
+                    </table>
+                     <!-- Checkboxes -->
+                     <div style="margin-top: 20px;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="residentialCheckbox" checked>
+                            <label class="form-check-label" for="residentialCheckbox" >Residential</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="commercialCheckbox" checked>
+                            <label class="form-check-label" for="commercialCheckbox">Commercial</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="agriculturalCheckbox" checked>
+                            <label class="form-check-label" for="agriculturalCheckbox">Agricultural</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="governmentCheckbox" checked>
+                            <label class="form-check-label" for="governmentCheckbox">Government</label>
+                        </div>
+                    </div>
                 </div>
             </nav>
             <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pr-md-4">
@@ -95,55 +122,63 @@
         });
     }
 
-    // Function to load the GeoJSON data and add it to the map
-    function loadGeoJSONFiles() {
-        // Load other GeoJSON files
-        const otherFiles = ['santacruz_lines.geojson', 'santacruz_point.geojson'];
+   // Function to load the GeoJSON data and add it to the map
+function loadGeoJSONFiles() {
+  // Load other GeoJSON files
+  const otherFiles = ['santacruz_lines.geojson', 'santacruz_point.geojson'];
 
-        otherFiles.forEach(file => {
-            fetch(file)
-                .then(response => response.json())
-                .then(data => {
-                    L.geoJSON(data, {
-                        style: styleFeature,
-                        onEachFeature: onEachFeature
-                    }).addTo(map);
-                })
-                .catch(error => {
-                    console.error('Error loading GeoJSON data:', error);
-                });
+  otherFiles.forEach(file => {
+    fetch(file)
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          style: styleFeature,
+          onEachFeature: onEachFeature
+        }).addTo(map);
+      })
+      .catch(error => {
+        console.error('Error loading GeoJSON data:', error);
+      });
+  });
+
+  // Load the santacruz_multipolygon.geojson file separately
+  const multipolygonFile = 'santacruz_multipolygon.geojson';
+
+  fetch(multipolygonFile)
+    .then(response => response.json())
+    .then(data => {
+      const polygonTable = document.getElementById('polygon-table');
+
+      data.features.forEach((feature, index) => {
+        const row = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        const button = document.createElement('button');
+
+        button.classList.add('btn', 'btn-sm', 'btn-outline-primary');
+        button.textContent = feature.properties.name || `Polygon ${index + 1}`;
+        button.addEventListener('click', () => {
+          const polygon = polygonLayer.getLayers()[index];
+          map.fitBounds(polygon.getBounds(), {
+            padding: [50, 50]
+          });
+          polygon.openPopup();
         });
 
-        // Load the santacruz_multipolygon.geojson file separately
-        const multipolygonFile = 'santacruz_multipolygon.geojson';
+        nameCell.appendChild(button);
+        row.appendChild(nameCell);
+        polygonTable.appendChild(row);
+      });
 
-        fetch(multipolygonFile)
-            .then(response => response.json())
-            .then(data => {
-                const polygonLayer = L.geoJSON(data, {
-                    style: styleFeature,
-                    onEachFeature: onEachFeature
-                }).addTo(map);
+      const polygonLayer = L.geoJSON(data, {
+        style: styleFeature,
+        onEachFeature: onEachFeature
+      }).addTo(map);
+    })
+    .catch(error => {
+      console.error('Error loading GeoJSON data:', error);
+    });
+}
 
-                // Create buttons for each polygon and add click events
-                data.features.forEach((feature, index) => {
-                    const button = document.createElement('button');
-                    button.classList.add('btn', 'btn-sm', 'btn-outline-primary', 'my-1');
-                    button.textContent = feature.properties.name || `Polygon ${index + 1}`;
-                    button.addEventListener('click', () => {
-                        const polygon = polygonLayer.getLayers()[index];
-                        map.fitBounds(polygon.getBounds(), {
-                            padding: [50, 50]
-                        });
-                        polygon.openPopup();
-                    });
-                    document.getElementById('polygon-buttons').appendChild(button);
-                });
-            })
-            .catch(error => {
-                console.error('Error loading GeoJSON data:', error);
-            });
-    }
 
     loadGeoJSONFiles();
     </script>
