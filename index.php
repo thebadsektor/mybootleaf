@@ -15,12 +15,29 @@
         width: 100%;
         height: 100vh;
     }
+
+    .sidebar {
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .table-container {
+        height: 50%;
+        overflow-y: auto;
+        margin-bottom: 10px;
+    }
+
+    .checkboxes {
+        margin-top: 10px;
+    }
+
+
     </style>
 </head>
 
 <body>
-    <!-- Add a Bootstrap side nav bar -->
-    <div class="container-fluid">
+     <!-- Add a Bootstrap side nav bar -->
+     <div class="container-fluid">
         <div class="row">
             <nav class="col-md-2 p-2 d-none d-md-block bg-light sidebar">
                 <div class="sidebar-sticky">
@@ -31,32 +48,38 @@
                         <img src="logo.png" width="40px">
                         <div style="font-size: 20px; font-weight: 700; color: #343a40; padding-left: 10px;">LGU</div>
                     </div>
-                    <!-- Table with selectable rows -->
-                    <table class="table table-hover table-striped">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody id="polygon-table"></tbody>
-                    </table>
-                     <!-- Checkboxes -->
-                     <div style="margin-top: 20px;">
+                    <div>
+                    <input type="text" class="form-control" placeholder="Search" aria-label="search" aria-describedby="basic-addon1">
+                    </div>
+                    <div class="table-container">
+                        <table id="polygon-table" class="table table-striped table-hover">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div class="checkboxes mt-2">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="residentialCheckbox" checked>
-                            <label class="form-check-label" for="residentialCheckbox" >Residential</label>
+                            <input class="form-check-input" type="checkbox" value="" id="residentialCheckbox" checked>
+                            <label class="form-check-label" for="residentialCheckbox">
+                                Unclassified
+                            </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="commercialCheckbox" checked>
-                            <label class="form-check-label" for="commercialCheckbox">Commercial</label>
+                            <input class="form-check-input" type="checkbox" value="" id="commercialCheckbox" checked>
+                            <label class="form-check-label" for="commercialCheckbox">
+                                Secondary
+                            </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="agriculturalCheckbox" checked>
-                            <label class="form-check-label" for="agriculturalCheckbox">Agricultural</label>
+                            <input class="form-check-input" type="checkbox" value="" id="agriculturalCheckbox" checked>
+                            <label class="form-check-label" for="agriculturalCheckbox">
+                                Residential
+                            </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="governmentCheckbox" checked>
-                            <label class="form-check-label" for="governmentCheckbox">Government</label>
+                            <input class="form-check-input" type="checkbox" value="" id="governmentCheckbox" checked>
+                            <label class="form-check-label" for="governmentCheckbox">
+                                Tertiary
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -69,7 +92,7 @@
 
     <script>
     // Define a color palette
-    const colorPalette = ['#FF8C42', '#FFB142', '#FFEA5A', '#8AFF5A', '#42FFC9', '#4292FF'];
+    const colorPalette = ['#22A699', '#F2BE22', '#F29727', '#F24C3D', '#42FFC9', '#4292FF'];
 
     // Initialize the map and set its view to Santa Cruz, Laguna
     var map = L.map('map').setView([14.282332, 121.423933], 13);
@@ -79,32 +102,36 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Style the GeoJSON features with a color palette
-    function styleFeature(feature) {
-        const propertyValue = feature.properties.value; // replace with the actual property name
-        let fillColor;
+    // Style the GeoJSON features with a color palette based on the "highway" feature
+function styleFeature(feature) {
+    const highway = feature.properties.highway;
+    let fillColor;
 
-        if (propertyValue < 10) {
-            fillColor = colorPalette[0];
-        } else if (propertyValue < 20) {
-            fillColor = colorPalette[1];
-        } else if (propertyValue < 30) {
-            fillColor = colorPalette[2];
-        } else if (propertyValue < 40) {
-            fillColor = colorPalette[3];
-        } else if (propertyValue < 50) {
-            fillColor = colorPalette[4];
-        } else {
-            fillColor = colorPalette[5];
-        }
-
-        return {
-            fillColor: fillColor,
-            fillOpacity: 0.3,
-            weight: 1,
-            color: 'white'
-        };
+    switch (highway) {
+        case 'unclassified':
+            fillColor = '#22A699';
+            break;
+        case 'secondary':
+            fillColor = '#F2BE22';
+            break;
+        case 'residential':
+            fillColor = '#F29727';
+            break;
+        case 'tertiary':
+            fillColor = '#F24C3D';
+            break;
+        default:
+            fillColor = '#42FFC9';
     }
+
+    return {
+        fillColor: fillColor,
+        fillOpacity: 0.3,
+        weight: 1,
+        color: 'white'
+    };
+}
+
 
     // Function to handle different types of features (e.g., points, lines, and polygons)
     function onEachFeature(feature, layer) {
@@ -152,21 +179,18 @@ function loadGeoJSONFiles() {
       data.features.forEach((feature, index) => {
         const row = document.createElement('tr');
         const nameCell = document.createElement('td');
-        const button = document.createElement('button');
 
-        button.classList.add('btn', 'btn-sm', 'btn-outline-primary');
-        button.textContent = feature.properties.name || `Polygon ${index + 1}`;
-        button.addEventListener('click', () => {
+        nameCell.textContent = feature.properties.name || `Polygon ${index + 1}`;
+        row.appendChild(nameCell);
+        polygonTable.appendChild(row);
+
+        row.addEventListener('click', () => {
           const polygon = polygonLayer.getLayers()[index];
           map.fitBounds(polygon.getBounds(), {
             padding: [50, 50]
           });
           polygon.openPopup();
         });
-
-        nameCell.appendChild(button);
-        row.appendChild(nameCell);
-        polygonTable.appendChild(row);
       });
 
       const polygonLayer = L.geoJSON(data, {
@@ -178,6 +202,7 @@ function loadGeoJSONFiles() {
       console.error('Error loading GeoJSON data:', error);
     });
 }
+
 
 
     loadGeoJSONFiles();
