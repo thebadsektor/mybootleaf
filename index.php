@@ -79,7 +79,7 @@
           <br>
           <b>Residential:</b> Barangay I and Barangay IV<br>
           <b>Commercial:</b> Barangay V,Barangay III, and Barangay II<br>
-          <b>Residential:</b> Bagumbayan<br>
+          <b>Agricultural:</b> Bagumbayan<br>
         </p>
         </div>
       </nav>
@@ -120,6 +120,7 @@
   // Generate mock data for real estate properties
   const propertyData = {
     name: feature.properties.name || 'No name available',
+    owner: 'Benito Ong',
     address: '123 Main St',
     price: 'Php 500,000',
     bedrooms: 3,
@@ -131,10 +132,9 @@
   // Generate the popup content using the mock data
   const popupContent = `
     <h3>${propertyData.name}</h3>
+    <p><strong>Owner:</strong> ${propertyData.owner}</p>
     <p><strong>Address:</strong> ${propertyData.address}</p>
-    <p><strong>Assessment Price:</strong> ${propertyData.price}</p>
-    <p><strong>Bedrooms:</strong> ${propertyData.bedrooms}</p>
-    <p><strong>Bathrooms:</strong> ${propertyData.bathrooms}</p>
+    <p><strong>Assessment Value:</strong> ${propertyData.price}</p>
     <p><strong>Area:</strong> ${propertyData.area}</p>
     <p><strong>Description:</strong> ${propertyData.description}</p>
   `;
