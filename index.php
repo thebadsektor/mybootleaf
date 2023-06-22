@@ -75,6 +75,12 @@
               </label>
             </div>
           </div>
+          <p style="font-size:12px">
+          <br>
+          <b>Residential:</b> Barangay I and Barangay IV<br>
+          <b>Commercial:</b> Barangay V,Barangay III, and Barangay II<br>
+          <b>Residential:</b> Bagumbayan<br>
+        </p>
         </div>
       </nav>
       <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pr-md-4">
@@ -95,7 +101,6 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Style the GeoJSON features with a color palette based on the "name" attribute
     function styleFeature(feature) {
         const name = feature.properties.name;
         const index = name ? [...name].reduce((sum, char) => sum + char.charCodeAt(0), 0) % colorPalette.length : 0;
@@ -105,35 +110,50 @@
             fillColor: fillColor,
             fillOpacity: 0.3,
             weight: 1,
-            color: 'white'
+            color: 'white',
+            name: name // Add the name attribute as a property for the shape
         };
     }
 
-    // Function to get a contrasting color for the text
-    function getContrastingColor(color) {
-    const hexColor = color.substr(1); // Remove the leading #
-    const rgbColor = parseInt(hexColor, 16); // Convert the hex color to RGB
-    const brightness = (rgbColor >> 16) + (rgbColor >> 8 & 0x00FF) + (rgbColor & 0x0000FF); // Calculate the brightness
 
-    // Use a light color for dark backgrounds and a dark color for light backgrounds
-    return brightness > 382.5 ? '#000000' : '#FFFFFF'; // Brightness threshold: 382.5 (out of 765)
-    }
-
-    // Function to handle different types of features (e.g., points, lines, and polygons)
     function onEachFeature(feature, layer) {
-      // You can add popups, event listeners, or other interactions for each feature here
-      layer.bindPopup(feature.properties.name || 'No name available');
-      // Add click event listener
-      layer.on('click', function (e) {
-        // Pan and zoom to the clicked polygon
-        map.fitBounds(e.target.getBounds(), {
-          padding: [50, 50]
-        });
+  // Generate mock data for real estate properties
+  const propertyData = {
+    name: feature.properties.name || 'No name available',
+    address: '123 Main St',
+    price: 'Php 500,000',
+    bedrooms: 3,
+    bathrooms: 2,
+    area: '2,000 sq ft',
+    description: 'Spacious and modern property located in a prime location.',
+  };
 
-        // Open the popup with the polygon's information
-        e.target.openPopup();
-      });
-    }
+  // Generate the popup content using the mock data
+  const popupContent = `
+    <h3>${propertyData.name}</h3>
+    <p><strong>Address:</strong> ${propertyData.address}</p>
+    <p><strong>Assessment Price:</strong> ${propertyData.price}</p>
+    <p><strong>Bedrooms:</strong> ${propertyData.bedrooms}</p>
+    <p><strong>Bathrooms:</strong> ${propertyData.bathrooms}</p>
+    <p><strong>Area:</strong> ${propertyData.area}</p>
+    <p><strong>Description:</strong> ${propertyData.description}</p>
+  `;
+
+  // Bind the popup with the generated content to the layer
+  layer.bindPopup(popupContent);
+
+  // Add click event listener
+  layer.on('click', function (e) {
+    // Pan and zoom to the clicked polygon
+    map.fitBounds(e.target.getBounds(), {
+      padding: [50, 50]
+    });
+
+    // Open the popup with the property information
+    e.target.openPopup();
+  });
+}
+
 
     // Function to load the GeoJSON data and add it to the map
     function loadGeoJSONFiles() {
